@@ -157,13 +157,14 @@ std::optional<std::tuple<V1_0::ErrorStatus, std::vector<OutputShape>, Timing>> d
     size_t index = 0;
 
     // validate packet information
-    if (data.size() == 0 || data[index].getDiscriminator() != discriminator::packetInformation) {
+    if (index >= data.size() ||
+        data.at(index).getDiscriminator() != discriminator::packetInformation) {
         LOG(ERROR) << "FMQ Result packet ill-formed";
         return std::nullopt;
     }
 
     // unpackage packet information
-    const FmqResultDatum::PacketInformation& packetInfo = data[index].packetInformation();
+    const FmqResultDatum::PacketInformation& packetInfo = data.at(index).packetInformation();
     index++;
     const uint32_t packetSize = packetInfo.packetSize;
     const V1_0::ErrorStatus errorStatus = packetInfo.errorStatus;
@@ -178,13 +179,14 @@ std::optional<std::tuple<V1_0::ErrorStatus, std::vector<OutputShape>, Timing>> d
     // unpackage operands
     for (size_t operand = 0; operand < numberOfOperands; ++operand) {
         // validate operand information
-        if (data[index].getDiscriminator() != discriminator::operandInformation) {
+        if (index >= data.size() ||
+            data.at(index).getDiscriminator() != discriminator::operandInformation) {
             LOG(ERROR) << "FMQ Result packet ill-formed";
             return std::nullopt;
         }
 
         // unpackage operand information
-        const FmqResultDatum::OperandInformation& operandInfo = data[index].operandInformation();
+        const FmqResultDatum::OperandInformation& operandInfo = data.at(index).operandInformation();
         index++;
         const bool isSufficient = operandInfo.isSufficient;
         const uint32_t numberOfDimensions = operandInfo.numberOfDimensions;
@@ -194,13 +196,14 @@ std::optional<std::tuple<V1_0::ErrorStatus, std::vector<OutputShape>, Timing>> d
         dimensions.reserve(numberOfDimensions);
         for (size_t i = 0; i < numberOfDimensions; ++i) {
             // validate dimension
-            if (data[index].getDiscriminator() != discriminator::operandDimensionValue) {
+            if (index >= data.size() ||
+                data.at(index).getDiscriminator() != discriminator::operandDimensionValue) {
                 LOG(ERROR) << "FMQ Result packet ill-formed";
                 return std::nullopt;
             }
 
             // unpackage dimension
-            const uint32_t dimension = data[index].operandDimensionValue();
+            const uint32_t dimension = data.at(index).operandDimensionValue();
             index++;
 
             // store result
@@ -212,13 +215,14 @@ std::optional<std::tuple<V1_0::ErrorStatus, std::vector<OutputShape>, Timing>> d
     }
 
     // validate execution timing
-    if (data[index].getDiscriminator() != discriminator::executionTiming) {
+    if (index >= data.size() ||
+        data.at(index).getDiscriminator() != discriminator::executionTiming) {
         LOG(ERROR) << "FMQ Result packet ill-formed";
         return std::nullopt;
     }
 
     // unpackage execution timing
-    const Timing timing = data[index].executionTiming();
+    const Timing timing = data.at(index).executionTiming();
     index++;
 
     // validate packet information
