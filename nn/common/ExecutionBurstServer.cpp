@@ -153,13 +153,14 @@ std::optional<std::tuple<Request, std::vector<int32_t>, MeasureTiming>> deserial
     size_t index = 0;
 
     // validate packet information
-    if (data.size() == 0 || data[index].getDiscriminator() != discriminator::packetInformation) {
+    if (index >= data.size() ||
+        data.at(index).getDiscriminator() != discriminator::packetInformation) {
         LOG(ERROR) << "FMQ Request packet ill-formed";
         return std::nullopt;
     }
 
     // unpackage packet information
-    const FmqRequestDatum::PacketInformation& packetInfo = data[index].packetInformation();
+    const FmqRequestDatum::PacketInformation& packetInfo = data.at(index).packetInformation();
     index++;
     const uint32_t packetSize = packetInfo.packetSize;
     const uint32_t numberOfInputOperands = packetInfo.numberOfInputOperands;
@@ -177,14 +178,15 @@ std::optional<std::tuple<Request, std::vector<int32_t>, MeasureTiming>> deserial
     inputs.reserve(numberOfInputOperands);
     for (size_t operand = 0; operand < numberOfInputOperands; ++operand) {
         // validate input operand information
-        if (data[index].getDiscriminator() != discriminator::inputOperandInformation) {
+        if (index >= data.size() ||
+            data.at(index).getDiscriminator() != discriminator::inputOperandInformation) {
             LOG(ERROR) << "FMQ Request packet ill-formed";
             return std::nullopt;
         }
 
         // unpackage operand information
         const FmqRequestDatum::OperandInformation& operandInfo =
-                data[index].inputOperandInformation();
+                data.at(index).inputOperandInformation();
         index++;
         const bool hasNoValue = operandInfo.hasNoValue;
         const DataLocation location = operandInfo.location;
@@ -195,13 +197,14 @@ std::optional<std::tuple<Request, std::vector<int32_t>, MeasureTiming>> deserial
         dimensions.reserve(numberOfDimensions);
         for (size_t i = 0; i < numberOfDimensions; ++i) {
             // validate dimension
-            if (data[index].getDiscriminator() != discriminator::inputOperandDimensionValue) {
+            if (index >= data.size() ||
+                data.at(index).getDiscriminator() != discriminator::inputOperandDimensionValue) {
                 LOG(ERROR) << "FMQ Request packet ill-formed";
                 return std::nullopt;
             }
 
             // unpackage dimension
-            const uint32_t dimension = data[index].inputOperandDimensionValue();
+            const uint32_t dimension = data.at(index).inputOperandDimensionValue();
             index++;
 
             // store result
@@ -218,14 +221,15 @@ std::optional<std::tuple<Request, std::vector<int32_t>, MeasureTiming>> deserial
     outputs.reserve(numberOfOutputOperands);
     for (size_t operand = 0; operand < numberOfOutputOperands; ++operand) {
         // validate output operand information
-        if (data[index].getDiscriminator() != discriminator::outputOperandInformation) {
+        if (index >= data.size() ||
+            data.at(index).getDiscriminator() != discriminator::outputOperandInformation) {
             LOG(ERROR) << "FMQ Request packet ill-formed";
             return std::nullopt;
         }
 
         // unpackage operand information
         const FmqRequestDatum::OperandInformation& operandInfo =
-                data[index].outputOperandInformation();
+                data.at(index).outputOperandInformation();
         index++;
         const bool hasNoValue = operandInfo.hasNoValue;
         const DataLocation location = operandInfo.location;
@@ -236,13 +240,14 @@ std::optional<std::tuple<Request, std::vector<int32_t>, MeasureTiming>> deserial
         dimensions.reserve(numberOfDimensions);
         for (size_t i = 0; i < numberOfDimensions; ++i) {
             // validate dimension
-            if (data[index].getDiscriminator() != discriminator::outputOperandDimensionValue) {
+            if (index >= data.size() ||
+                data.at(index).getDiscriminator() != discriminator::outputOperandDimensionValue) {
                 LOG(ERROR) << "FMQ Request packet ill-formed";
                 return std::nullopt;
             }
 
             // unpackage dimension
-            const uint32_t dimension = data[index].outputOperandDimensionValue();
+            const uint32_t dimension = data.at(index).outputOperandDimensionValue();
             index++;
 
             // store result
@@ -259,13 +264,14 @@ std::optional<std::tuple<Request, std::vector<int32_t>, MeasureTiming>> deserial
     slots.reserve(numberOfPools);
     for (size_t pool = 0; pool < numberOfPools; ++pool) {
         // validate input operand information
-        if (data[index].getDiscriminator() != discriminator::poolIdentifier) {
+        if (index >= data.size() ||
+            data.at(index).getDiscriminator() != discriminator::poolIdentifier) {
             LOG(ERROR) << "FMQ Request packet ill-formed";
             return std::nullopt;
         }
 
         // unpackage operand information
-        const int32_t poolId = data[index].poolIdentifier();
+        const int32_t poolId = data.at(index).poolIdentifier();
         index++;
 
         // store result
@@ -273,18 +279,18 @@ std::optional<std::tuple<Request, std::vector<int32_t>, MeasureTiming>> deserial
     }
 
     // validate measureTiming
-    if (data[index].getDiscriminator() != discriminator::measureTiming) {
+    if (index >= data.size() || data.at(index).getDiscriminator() != discriminator::measureTiming) {
         LOG(ERROR) << "FMQ Request packet ill-formed";
         return std::nullopt;
     }
 
     // unpackage measureTiming
-    const MeasureTiming measure = data[index].measureTiming();
+    const MeasureTiming measure = data.at(index).measureTiming();
     index++;
 
     // validate packet information
     if (index != packetSize) {
-        LOG(ERROR) << "FMQ Result packet ill-formed";
+        LOG(ERROR) << "FMQ Request packet ill-formed";
         return std::nullopt;
     }
 
